@@ -1,0 +1,43 @@
+services:
+  core:
+    image: freqtradeorg/freqtrade:stable
+    restart: unless-stopped
+    container_name: aiotrade_core
+    volumes:
+      - ./aiotrade_data:/freqtrade/user_data
+    ports:
+      
+      - "127.0.0.1:8080:8080"
+    command: >
+      trade --logfile /freqtrade/user_data/logs/freqtrade.log --db-url sqlite:////freqtrade/user_data/tradesv3.sqlite --config /freqtrade/user_data/config.json --strategy AiotradeStrategy
+    healthcheck:
+      test: [ "CMD", "python3", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8080/api/v1/ping').status==200 else 1)" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - trading_net
+
+  bot:
+    build:
+      context: ./bot_controller
+      dockerfile: Dockerfile
+    restart: always
+    container_name: aiotrade_bot
+    env_file:
+      - .env
+    depends_on:
+      core:
+        condition: service_healthy
+    volumes:
+      # Бот должен видеть папку данных, чтобы читать strategy_params.json
+      - ./aiotrade_data:/app/shared_data
+    environment:
+      - FT_API_URL=http://core:8080
+    networks:
+      - trading_net
+
+networks:
+  trading_net:
+    driver: bridge
