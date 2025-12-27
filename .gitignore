@@ -21,3 +21,7 @@ __init__.py
 mypy.ini
 pyproject.toml
 .pre-commit-config.yaml
+CHANGELOG.md
+Note.txt
+CHANG.MD
+

@@ -31,10 +31,8 @@ services:
       core:
         condition: service_healthy
     volumes:
-      # Бот должен видеть папку данных, чтобы читать strategy_params.json
       - ./aiotrade_data:/app/shared_data
-    environment:
-      - FT_API_URL=http://core:8080
+
     networks:
       - trading_net
 
