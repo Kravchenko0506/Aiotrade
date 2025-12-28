@@ -1,9 +1,0 @@
-{
-  "rsi_period": 14,
-  "rsi_buy": 30,
-  "rsi_sell": 70,
-  "stoploss": -0.10,
-  "trailing_stop": true,
-  "trailing_stop_positive": 0.01,
-  "trailing_stop_positive_offset": 0.02
-}
