@@ -2,7 +2,7 @@ import asyncio
 import os
 import sys
 
-from aiogram import Bot, Dispatcher
+from aiogram import Bot, Dispatcher, types
 from api_client import APIClient
 from dotenv import load_dotenv
 from handlers import router
@@ -57,12 +57,22 @@ async def main() -> None:
     dp = Dispatcher()
     dp.message.middleware(AdminMiddleware(admin_id))
     dp.include_router(router)
+
     client = APIClient(base_url=api_url, username=api_user, password=api_pass)
 
     logger.info("Starting Telegram bot polling loop")
     try:
-
+        await bot.set_my_commands(
+            [
+                types.BotCommand(command="start", description="🏠 Главное меню"),
+                types.BotCommand(
+                    command="reload", description="🔄 Перезагрузить конфиг"
+                ),
+            ],
+            scope=types.BotCommandScopeAllPrivateChats(),
+        )
         await dp.start_polling(bot, api_client=client)
+
     except Exception as e:
         logger.critical(f"Critical error during polling: {e}")
     finally:

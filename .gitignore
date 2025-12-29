@@ -5,6 +5,7 @@ __pycache__/
 venv/
 .github/
 .vscode/
+.gemini/
 *.log
 TS.md
 aiotrade_data/user_data/backtest_results/
@@ -22,4 +23,5 @@ pyproject.toml
 CHANGELOG.md
 Note.txt
 aiotrade_data/
+.geminignore
 
