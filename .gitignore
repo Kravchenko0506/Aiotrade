@@ -22,6 +22,10 @@ pyproject.toml
 .pre-commit-config.yaml
 CHANGELOG.md
 Note.txt
-aiotrade_data/
 .geminignore
+!aiotrade_data/strategies/
+!aiotrade_data/strategies/AiotradeStrategy.py
 
+aiotrade_data/config.json
+aiotrade_data/strategy_params.json
+TODO.md

@@ -188,7 +188,7 @@ async def process_rsi_input(
     """Validate and save RSI."""
     try:
         new_value = int(message.text)
-        if not (1 <= new_value <= 100):
+        if not (1 <= new_value <= 99):
             raise ValueError
 
         params = await asyncio.to_thread(load_params)

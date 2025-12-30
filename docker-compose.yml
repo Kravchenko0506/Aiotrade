@@ -1,6 +1,6 @@
 services:
   core:
-    image: freqtradeorg/freqtrade:stable
+    build: .
     restart: unless-stopped
     container_name: aiotrade_core
     environment:
