@@ -6,30 +6,13 @@ from aiogram import Bot, Dispatcher, types
 from api_client import APIClient
 from dotenv import load_dotenv
 from handlers import router
+from logger import setup_logging
 from loguru import logger
 from middlewares import AdminMiddleware
 
 load_dotenv()
 
-logger.remove()
-logger.add(
-    sys.stderr,
-    format=(
-        "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
-        "<level>{level: <8}</level> | "
-        "<cyan>{name}</cyan>:<cyan>{function}</cyan> - "
-        "<level>{message}</level>"
-    ),
-    level="INFO",
-)
-os.makedirs("logs", exist_ok=True)
-logger.add(
-    "logs/bot_controller.log",
-    rotation="10 MB",
-    retention="7 days",
-    compression="zip",
-    level="DEBUG",
-)
+setup_logging()
 
 
 async def main() -> None:
