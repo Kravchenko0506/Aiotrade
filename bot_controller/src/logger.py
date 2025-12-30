@@ -34,6 +34,10 @@ def setup_logging():
     Configures Loguru logger and intercepts standard library logging.
     """
 
+    if getattr(setup_logging, "_is_setup", False):
+        return
+    setup_logging._is_setup = True
+
     logger.remove()
 
     log_format = (
@@ -50,4 +54,7 @@ def setup_logging():
         colorize=True,
     )
 
-    logging.basicConfig(handlers=[InterceptHandler()], level=0, force=True)
+    logging.basicConfig(handlers=[InterceptHandler()], level=logging.INFO, force=True)
+
+    logging.getLogger("aiogram").setLevel(logging.INFO)
+    logging.getLogger("aiohttp").setLevel(logging.INFO)
