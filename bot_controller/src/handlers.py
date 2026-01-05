@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+from typing import Callable, Any
 
 from aiogram import F, Router, types
 from aiogram.exceptions import TelegramBadRequest
@@ -170,6 +171,57 @@ async def cb_settings(callback: types.CallbackQuery):
     )
 
 
+async def _update_param(
+    message: types.Message,
+    state: FSMContext,
+    api_client: APIClient,
+    param_name: str,
+    validator: Callable[[str], Any],
+    error_msg: str,
+) -> None:
+    """Universal handler for parameter updates."""
+    try:
+        new_value = validator(message.text)
+
+        params = await asyncio.to_thread(load_params)
+        params[param_name] = new_value
+        success = await asyncio.to_thread(save_params, params)
+
+        if not success:
+            await message.answer("❌ Ошибка записи файла параметров.")
+            return
+
+        reload_ok = await api_client.reload_config()
+        if reload_ok:
+            await message.answer(
+                f"✅ **{param_name} изменен на {new_value}**",
+                reply_markup=get_settings_menu(),
+                parse_mode="Markdown",
+            )
+        else:
+            await message.answer("⚠️ Параметр сохранен, но не применен (бот недоступен)")
+
+    except ValueError:
+        await message.answer(error_msg)
+        return
+
+    await state.clear()
+
+
+def validate_rsi(text: str) -> int:
+    value = int(text)
+    if not (1 <= value <= 99):
+        raise ValueError
+    return value
+
+
+def validate_stoploss(text: str) -> float:
+    value = float(text)
+    if not (-1.0 <= value <= 0.0):
+        raise ValueError
+    return value
+
+
 @router.callback_query(F.data == "set_rsi")
 async def start_set_rsi(callback: types.CallbackQuery, state: FSMContext):
     """Enter RSI edit mode."""
@@ -185,29 +237,14 @@ async def start_set_rsi(callback: types.CallbackQuery, state: FSMContext):
 async def process_rsi_input(
     message: types.Message, state: FSMContext, api_client: APIClient
 ):
-    """Validate and save RSI."""
-    try:
-        new_value = int(message.text)
-        if not (1 <= new_value <= 99):
-            raise ValueError
-
-        params = await asyncio.to_thread(load_params)
-        params["rsi_buy"] = new_value
-        success = await asyncio.to_thread(save_params, params)
-
-        if success:
-            await api_client.reload_config()
-            await message.answer(
-                f"✅ **RSI изменен на {new_value}**", reply_markup=get_settings_menu()
-            )
-        else:
-            await message.answer("❌ Ошибка записи файла параметров.")
-
-    except ValueError:
-        await message.answer("⚠️ Пожалуйста, введите целое число от 1 до 100.")
-        return
-
-    await state.clear()
+    await _update_param(
+        message,
+        state,
+        api_client,
+        param_name="rsi_buy",
+        validator=validate_rsi,
+        error_msg="⚠️ Введите целое число от 1 до 99",
+    )
 
 
 @router.callback_query(F.data == "set_stoploss")
@@ -225,30 +262,11 @@ async def start_set_stoploss(callback: types.CallbackQuery, state: FSMContext):
 async def process_stoploss_input(
     message: types.Message, state: FSMContext, api_client: APIClient
 ):
-    """Validate and save Stoploss."""
-    try:
-        new_value = float(message.text)
-        if not (-1.0 <= new_value <= 0.0):
-            await message.answer(
-                "⚠️ Стоплосс должен быть от -1.0 до 0.0 (например -0.1)"
-            )
-            return
-
-        params = await asyncio.to_thread(load_params)
-        params["stoploss"] = new_value
-        success = await asyncio.to_thread(save_params, params)
-
-        if success:
-            await api_client.reload_config()
-            await message.answer(
-                f"✅ **Stoploss изменен на {new_value}**",
-                reply_markup=get_settings_menu(),
-            )
-        else:
-            await message.answer("❌ Ошибка записи файла параметров.")
-
-    except ValueError:
-        await message.answer("⚠️ Введите число через точку (например -0.1).")
-        return
-
-    await state.clear()
+    await _update_param(
+        message,
+        state,
+        api_client,
+        param_name="stoploss",
+        validator=validate_stoploss,
+        error_msg="⚠️ Введите число от -1.0 до 0.0 (например -0.1)",
+    )
