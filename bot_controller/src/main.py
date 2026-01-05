@@ -1,3 +1,4 @@
+from middlewares import ServicesMiddleware
 import asyncio
 import os
 import sys
@@ -39,10 +40,10 @@ async def main() -> None:
     bot = Bot(token=bot_token)
     dp = Dispatcher()
     dp.message.middleware(AdminMiddleware(admin_id))
-    dp.include_router(router)
 
     client = APIClient(base_url=api_url, username=api_user, password=api_pass)
-
+    dp.update.middleware(ServicesMiddleware(api_client=client))
+    dp.include_router(router)
     logger.info("Starting Telegram bot polling loop")
     try:
         await bot.set_my_commands(
@@ -54,7 +55,7 @@ async def main() -> None:
             ],
             scope=types.BotCommandScopeAllPrivateChats(),
         )
-        await dp.start_polling(bot, api_client=client)
+        await dp.start_polling(bot)
 
     except Exception as e:
         logger.critical(f"Critical error during polling: {e}")
