@@ -15,7 +15,7 @@ class StrategyParams(BaseModel):
     rsi_period: int = Field(default=14, ge=2, le=100)
     rsi_buy: int = Field(default=30, ge=1, le=99)
     rsi_sell: int = Field(default=70, ge=1, le=99)
-    stoploss: float = Field(default=-0.10, lt=0.0, ge=-1.0)
+    stoploss: float = Field(default=-0.10, le=0.0, ge=-1.0)
     trailing_stop: bool = Field(default=True)
     trailing_stop_positive: float = Field(default=0.01, ge=0.0)
     trailing_stop_positive_offset: float = Field(default=0.02, ge=0.0)

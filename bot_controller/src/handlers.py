@@ -21,12 +21,7 @@ async def _get_status_text(api_client: APIClient) -> str:
     """
     now = datetime.datetime.now().strftime("%H:%M:%S")
 
-    config_data, balance_data, daily_data, trades_data = await asyncio.gather(
-        api_client.get_status(),
-        api_client.get_balance(),
-        api_client.get_daily_profit(),
-        api_client.get_trades(),
-    )
+    config_data = await api_client.get_status()
 
     if config_data is None:
         return (
@@ -34,6 +29,12 @@ async def _get_status_text(api_client: APIClient) -> str:
             f"🕒 `{now}`\n"
             "Не удалось связаться с Freqtrade API."
         )
+
+    balance_data, daily_data, trades_data = await asyncio.gather(
+        api_client.get_balance(),
+        api_client.get_daily_profit(),
+        api_client.get_trades(),
+    )
 
     if not config_data or "state" not in config_data:
         return f"⚠️ **Ошибка данных**\n" f"🕒 `{now}`\n" "API вернул некорректный ответ."
